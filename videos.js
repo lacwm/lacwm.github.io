@@ -1,0 +1,25 @@
+const videoExamples = {"planning": [{"label": "Grasp and lift \u00b7 example 1", "videos": [{"src": "assets/videos/planning-1-lac-wm.mp4", "poster": "assets/videos/planning-1-lac-wm.jpg", "label": "LAC-WM", "outcome": "success", "badge": "Success", "note": "Grasps and lifts the object."}, {"src": "assets/videos/planning-1-eac-wm.mp4", "poster": "assets/videos/planning-1-eac-wm.jpg", "label": "EAC-WM", "outcome": "failure", "badge": "Failed grasp", "note": "Retracts without lifting the object."}]}, {"label": "Grasp and lift \u00b7 example 2", "videos": [{"src": "assets/videos/planning-3-lac-wm.mp4", "poster": "assets/videos/planning-3-lac-wm.jpg", "label": "LAC-WM", "outcome": "success", "badge": "Success", "note": "Grasps and lifts the object."}, {"src": "assets/videos/planning-3-eac-wm.mp4", "poster": "assets/videos/planning-3-eac-wm.jpg", "label": "EAC-WM", "outcome": "failure", "badge": "Failed grasp", "note": "Retracts without lifting the object."}]}], "transfer": [{"label": "Agibot \u2192 EgoDex (human) \u00b7 example 1", "videos": [{"src": "assets/videos/clip-012.mp4", "poster": "assets/videos/clip-012.jpg", "label": "Reference \u00b7 Agibot"}, {"src": "assets/videos/clip-009.mp4", "poster": "assets/videos/clip-009.jpg", "label": "EAC-WM"}, {"src": "assets/videos/clip-011.mp4", "poster": "assets/videos/clip-011.jpg", "label": "LAC-WM"}]}, {"label": "Agibot \u2192 Droid \u00b7 example 1", "videos": [{"label": "Reference \u00b7 Agibot", "src": "assets/videos/transfer-agibot2droid-1_refer.mp4", "poster": "assets/videos/transfer-agibot2droid-1_refer.jpg"}, {"label": "EAC-WM", "src": "assets/videos/transfer-agibot2droid-1_EAC.mp4", "poster": "assets/videos/transfer-agibot2droid-1_EAC.jpg"}, {"label": "LAC-WM", "src": "assets/videos/transfer-agibot2droid-1_LAC.mp4", "poster": "assets/videos/transfer-agibot2droid-1_LAC.jpg"}]}, {"label": "Droid \u2192 EgoDex (human) \u00b7 example 1", "videos": [{"label": "Reference \u00b7 Droid", "src": "assets/videos/transfer-droid2egodex-1_refer.mp4", "poster": "assets/videos/transfer-droid2egodex-1_refer.jpg"}, {"label": "EAC-WM", "src": "assets/videos/transfer-droid2egodex-1_EAC.mp4", "poster": "assets/videos/transfer-droid2egodex-1_EAC.jpg"}, {"label": "LAC-WM", "src": "assets/videos/transfer-droid2egodex-1_LAC.mp4", "poster": "assets/videos/transfer-droid2egodex-1_LAC.jpg"}]}, {"label": "EgoDex (human) \u2192 Agibot \u00b7 example 1", "videos": [{"label": "Reference \u00b7 EgoDex (human)", "src": "assets/videos/transfer-egodex2agibot-1_refer.mp4", "poster": "assets/videos/transfer-egodex2agibot-1_refer.jpg"}, {"label": "EAC-WM", "src": "assets/videos/transfer-egodex2agibot-1_EAC.mp4", "poster": "assets/videos/transfer-egodex2agibot-1_EAC.jpg"}, {"label": "LAC-WM", "src": "assets/videos/transfer-egodex2agibot-1_LAC.mp4", "poster": "assets/videos/transfer-egodex2agibot-1_LAC.jpg"}]}]};
+document.querySelectorAll('.video-gallery').forEach(gallery => {
+ const select = gallery.querySelector('select');
+ const grid = gallery.querySelector('.video-grid');
+ const status = gallery.querySelector('.video-status');
+ const pause = () => gallery.querySelectorAll('video').forEach(video => video.pause());
+ select.addEventListener('change', () => {
+  pause(); status.textContent = '';
+  grid.replaceChildren(...videoExamples[gallery.dataset.gallery][Number(select.value)].videos.map(item => {
+   const card = document.createElement('figure'); card.className = 'video-card' + (item.outcome ? ' outcome-' + item.outcome : '');
+   const label = document.createElement('figcaption'); label.textContent = item.label; if (item.badge) { const badge = document.createElement('span'); badge.className = 'outcome-badge'; badge.textContent = item.badge; label.append(badge); }
+   const video = document.createElement('video'); video.controls = true; video.muted = true; video.playsInline = true; video.preload = 'none'; video.poster = item.poster; video.src = item.src; video.setAttribute('aria-label', item.label);
+   video.textContent = 'Your browser does not support video playback.';
+   card.append(label, video); if(item.note) { const note = document.createElement('p'); note.className = 'outcome-note'; note.textContent = item.note; card.append(note); } return card;
+  }));
+ });
+ gallery.querySelector('.play-comparison').addEventListener('click', async () => {
+  pause(); status.textContent = '';
+  const videos = [...gallery.querySelectorAll('video')];
+  videos.forEach(video => { video.currentTime = 0; });
+  const results = await Promise.allSettled(videos.map(video => video.play()));
+  if(results.some(result => result.status === 'rejected')) status.textContent = 'Some clips could not start. Use their individual playback controls to try again.';
+ });
+ gallery.querySelector('.pause-comparison').addEventListener('click', pause);
+});
